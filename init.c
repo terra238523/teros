@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +12,7 @@
 
 #define MNT "/mnt"
 
-// --- Helpers ---
+// String trimming utility
 static void trim(char *s) {
     if (!s) return;
     size_t len = strlen(s);
@@ -21,6 +22,7 @@ static void trim(char *s) {
     if (start > 0) memmove(s, s + start, strlen(s + start) + 1);
 }
 
+// Parse command line into arguments
 static int split_argv(char *line, char *argv[], int max_args) {
     int argc = 0;
     trim(line);
@@ -36,8 +38,10 @@ static int split_argv(char *line, char *argv[], int max_args) {
     return argc;
 }
 
+// Check if path contains directory separators
 static int has_slash(const char *s) { return s && strchr(s, '/'); }
 
+// List files in mounted directory
 static void list_files(void) {
     DIR *d = opendir(MNT);
     if (!d) { printf("Cannot open %s: %s\n", MNT, strerror(errno)); return; }
@@ -49,6 +53,7 @@ static void list_files(void) {
     closedir(d);
 }
 
+// Display file contents
 static void cat_file(char *filename) {
     trim(filename);
     char path[PATH_MAX];
@@ -60,6 +65,7 @@ static void cat_file(char *filename) {
     fclose(f);
 }
 
+// Create and edit a file
 static void save_file(char *filename) {
     trim(filename);
     char path[PATH_MAX];
@@ -71,10 +77,10 @@ static void save_file(char *filename) {
     for (;;) {
         printf("> ");
         if (!fgets(line, sizeof(line), stdin)) {
-    // don't exit init if fgets returns NULL due to non-blocking fd or EINTR
-    clearerr(stdin);
-    continue;
-}
+            // Handle non-blocking stdin or interrupted reads
+            clearerr(stdin);
+            continue;
+        }
         trim(line);
         if (strcmp(line, ".") == 0) break;
         fputs(line, f);
@@ -83,6 +89,7 @@ static void save_file(char *filename) {
     fclose(f);
 }
 
+// Execute program with PATH resolution
 static int try_exec_with_paths(char *argv[]) {
     if (has_slash(argv[0])) {
         execv(argv[0], argv);
@@ -97,6 +104,7 @@ static int try_exec_with_paths(char *argv[]) {
     return -1;
 }
 
+// Display available commands
 static void print_help(void) {
     puts("Built-ins: help, echo <text>, ls, cat <file>, save <file>, pwd, cd <dir>, exit");
     puts("External programs: type program name or ./prog / absolute paths");
@@ -104,7 +112,7 @@ static void print_help(void) {
 }
 
 int main(void) {
-    // Ensure folders exist
+    // Initialize directory structure
     mkdir(MNT, 0755);
     mkdir("/bin", 0755);
     mkdir("/sbin", 0755);
@@ -126,7 +134,7 @@ int main(void) {
         int argc = split_argv(line, argv, 64);
         if (argc == 0) continue;
 
-        // ---- Builtins ----
+        // Built-in command handling
         if (strcmp(argv[0], "exit") == 0) {
             printf("Use reboot/poweroff — 'exit' disabled in init.\n");
             continue; }
@@ -139,18 +147,18 @@ int main(void) {
         else if (strcmp(argv[0], "cd") == 0) { const char *target = (argc>=2)?argv[1]:"/"; if (chdir(target)==-1) printf("cd: %s: %s\n", target, strerror(errno)); continue; }
         else if (strcmp(argv[0], "run") == 0) { printf("What are you running from?\n"); continue; }
 
-        // ---- External programs ----
+        // External command execution
         pid_t pid = fork();
         if (pid < 0) {
             perror("fork failed");
             continue;
         }
-        if (pid == 0) { // child
+        if (pid == 0) { // child process
             if (try_exec_with_paths(argv) == -1) {
                 fprintf(stderr, "exec failed: %s\n", strerror(errno));
-                _exit(127); // crucial: never return to init shell
+                _exit(127); // Prevent returning to init shell
             }
-        } else { // parent
+        } else { // parent process
             int status;
             while (1) {
                 pid_t w = waitpid(pid, &status, 0);

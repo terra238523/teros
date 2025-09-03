@@ -1,4 +1,4 @@
-# Makefile for My Text OS
+# Makefile for TerOS
 
 CC = gcc
 CFLAGS = -static -O2
@@ -10,7 +10,7 @@ INIT_BINARY = init
 
 all: $(INITRAMFS)
 
-# Compile init, copy to rootfs, create /init, build initramfs
+# Build the initramfs image
 $(INITRAMFS): $(INIT_BINARY).c
 	@echo "Compiling init.c..."
 	$(CC) $(CFLAGS) -o $(INIT_BINARY) $(INIT_BINARY).c
@@ -18,7 +18,7 @@ $(INITRAMFS): $(INIT_BINARY).c
 	mkdir -p $(ROOTFS)/sbin
 	cp $(INIT_BINARY) $(ROOTFS)/sbin/
 	chmod +x $(ROOTFS)/sbin/$(INIT_BINARY)
-	# Copy to /init as real binary (not symlink) for Linux 6.x
+	# Create /init entry point (required by Linux 6.x+)
 	cp $(ROOTFS)/sbin/$(INIT_BINARY) $(ROOTFS)/init
 	chmod +x $(ROOTFS)/init
 	@echo "Packing initramfs..."

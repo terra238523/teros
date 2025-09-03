@@ -21,28 +21,23 @@ int score = 0;
 struct termios old_tio;
 int old_flags = -1;
 
-// Disable terminal buffering
+// Restore terminal to original state
 void disable_buffering() {
-    // restore terminal attrs (affects tty)
     tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
-
-    // restore blocking/flags (must restore so parent sees blocking reads)
+    
     if (old_flags != -1) {
         fcntl(STDIN_FILENO, F_SETFL, old_flags);
         old_flags = -1;
     }
 }
 
-// Enable non-blocking input
-
+// Configure terminal for non-blocking input
 void enable_nonblocking_input() {
     struct termios new_tio;
-    // save current terminal attrs
     if (tcgetattr(STDIN_FILENO, &old_tio) == -1) {
-        // not a terminal? fail gracefully
-        return;
+        return; // Not a terminal, skip setup
     }
-    // save file flags and set non-blocking
+    
     old_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
     if (old_flags == -1) old_flags = 0;
     fcntl(STDIN_FILENO, F_SETFL, old_flags | O_NONBLOCK);
@@ -51,10 +46,10 @@ void enable_nonblocking_input() {
     new_tio.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
 
-    atexit(disable_buffering); // ensure restore on exit
+    atexit(disable_buffering); // Clean up on exit
 }
 
-// Place food at a random empty position
+// Place food in a valid position
 void place_food() {
     int valid;
     do {
@@ -67,7 +62,7 @@ void place_food() {
     } while (!valid);
 }
 
-// Initialize snake in top-left corner
+// Initialize snake at starting position
 void init_snake() {
     for (int i = 0; i < snake_len; i++) {
         snake[i].x = snake_len - i - 1;
@@ -75,9 +70,9 @@ void init_snake() {
     }
 }
 
-// Draw board
+// Render game board
 void draw_board() {
-    printf("\033[H\033[J"); // clear screen
+    printf("\033[H\033[J"); // Clear screen
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
             int printed = 0;
@@ -95,7 +90,7 @@ void draw_board() {
     printf("Use WASD to move, 'q' to quit\n");
 }
 
-// Update snake position safely
+// Update game state
 void update_snake() {
     Point next = snake[0];
     if (dir == 'w') next.y--;
@@ -103,7 +98,7 @@ void update_snake() {
     if (dir == 'a') next.x--;
     if (dir == 'd') next.x++;
 
-    // Check collisions
+    // Collision detection
     if (next.x < 0 || next.x >= WIDTH || next.y < 0 || next.y >= HEIGHT) { game_over = 1; return; }
     for (int i = 0; i < snake_len; i++) {
         if (snake[i].x == next.x && snake[i].y == next.y) { game_over = 1; return; }
@@ -113,7 +108,7 @@ void update_snake() {
     for (int i = snake_len-1; i > 0; i--) snake[i] = snake[i-1];
     snake[0] = next;
 
-    // Eat food
+    // Food consumption
     if (next.x == food.x && next.y == food.y) {
         if (snake_len < MAX_SNAKE) snake_len++;
         score += 10;
@@ -121,7 +116,7 @@ void update_snake() {
     }
 }
 
-// Handle user input
+// Process user input
 void handle_input() {
     char ch;
     while (read(STDIN_FILENO, &ch, 1) > 0) {
@@ -139,18 +134,18 @@ int main() {
     init_snake();
     place_food();
 
+    // Main game loop
     while (!game_over) {
         handle_input();
         update_snake();
         draw_board();
-        usleep(200000); // 0.2s per frame
+        usleep(200000); // 200ms frame rate
     }
 
-    // Game over
     printf("Game Over! Final score: %d\n", score);
     printf("Press Enter to return to shell...\n");
     char buf[16];
     fgets(buf, sizeof(buf), stdin);
 
-    return 0; // safely returns to init shell
+    return 0;
 }
