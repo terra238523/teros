@@ -32,7 +32,7 @@ This project is designed for learning OS development, static binaries, and basic
 
 ## **Requirements**
 
-- A **POSIX terminal** (Linux recommended; macOS/xBSD may work with extra setup)
+- A **POSIX terminal** (Linux recommended; macOS/xBSD may work with extra setup) (Use WSL if you're on Windows)
 - GCC (or Clang) and GNU Make
 - **GNU binutils** (ld, ar, objcopy, etc.)
 - `cpio` and `gzip` for **building the initramfs**
