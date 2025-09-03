@@ -58,7 +58,9 @@ cd ~/teros
 ## **Build the initramfs and programs**
 
 (after you cd into teros as the previous instruction say)
-`make`
+```
+make
+```
 
 ---
 
@@ -66,8 +68,8 @@ cd ~/teros
 
 ```
 qemu-system-x86_64 \
-  -kernel linux-6.16.4/arch/x86/boot/bzImage \
-  -initrd teros/initramfs.cpio.gz \
+  -kernel ~/linux-6.16.4/arch/x86/boot/bzImage \
+  -initrd ~/teros/initramfs.cpio.gz \
   -append "init=/init"
 ```
 
