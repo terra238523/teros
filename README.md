@@ -32,17 +32,46 @@ This project is designed for learning OS development, static binaries, and basic
 
 ## **Requirements**
 
-- **POSIX Terminal (Linux, xBSD, macOS etc.)** (Use WSL if on Windows.)
-- Some kernel. I personally used Linux 
-- **GCC** for compilation
-- **QEMU** for testing and booting
+- A **POSIX terminal** (Linux recommended; macOS/xBSD may work with extra setup)
+- GCC (or Clang) and GNU Make
+- **GNU binutils** (ld, ar, objcopy, etc.)
+- `cpio` and `gzip` for **building the initramfs**
+- **glibc** or **musl**
+- **QEMU** for testing/booting
+- **Linux kernel image** (`bzImage`) with initramfs support. Linux kernel linux-6.16.4 recommended.
+  
+⚠️ **Note**: This project is primarily tested on **Linux**. macOS and BSD users may need to install GNU versions of tools (gmake, GNU binutils, GNU cpio) since their default system tools differ. I haven’t tested these platforms personally.
 
 ---
 
 ## **Getting Started**
 
 Clone the repository:
+```
+bash 
+git clone https://github.com/terra238523/teros.git 
+cd ~/teros
+```
 
-```bash
-git clone https://github.com/YOUR_USERNAME/myos.git
-cd myos ```
+---
+
+## **Build the initramfs and programs**
+
+(after you cd into teros as the previous instruction say)
+`make`
+
+---
+
+## **Run in QEMU**
+
+```
+qemu-system-x86_64 \
+  -kernel linux-6.16.4/arch/x86/boot/bzImage \
+  -initrd teros/initramfs.cpio.gz \
+  -append "init=/init"
+```
+
+---
+
+## **License**
+This project is licensed under GNU General Public License v2 (GPL-2.0) — see [LICENSE](https://github.com/terra238523/teros/blob/main/LICENSE) for details
