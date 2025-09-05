@@ -49,7 +49,7 @@ This project is designed for learning OS development, static binaries, and basic
 Clone the repository:
 ```
 bash 
-git clone https://github.com/terra238523/teros.git 
+git clone https://github.com/TerraPose/teros.git 
 cd ~/teros
 ```
 
@@ -76,4 +76,4 @@ qemu-system-x86_64 \
 ---
 
 ## **License**
-This project is licensed under GNU General Public License v2 (GPL-2.0) — see [LICENSE](https://github.com/terra238523/teros/blob/main/LICENSE) for details
+This project is licensed under GNU General Public License v2 (GPL-2.0) — see [LICENSE](https://github.com/TerraPose/teros/blob/main/LICENSE) for details
