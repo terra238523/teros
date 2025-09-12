@@ -76,4 +76,4 @@ qemu-system-x86_64 \
 ---
 
 ## **License**
-This project is licensed under GNU General Public License v2 (GPL-2.0) — see [LICENSE](https://github.com/terra2o/teros/blob/main/LICENSE) for details
+This project is licensed under AGPLv3 — see [LICENSE](https://github.com/terra2o/teros/blob/main/LICENSE) for details
